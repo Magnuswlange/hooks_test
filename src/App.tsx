@@ -22,7 +22,7 @@ export default function App() {
     localStorage.setItem("TODO_LIST", JSON.stringify(todos));
   }, [todos]);
 
-  const onSubmit = (e: HTMLFormElement) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!inputRef.current) return;
     const trimmed = inputRef.current.value.trim();
@@ -38,14 +38,16 @@ export default function App() {
   return (
     <div className="w-1/2 mx-auto px-4 py-2 rounded-2xl bg-blue-500 text-white flex flex-col gap-2 shadow">
       <h1 className="text-center text-4xl font-semibold p-4">To-Do List</h1>
-      <form className="flex flex-col gap-2">
+      <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
         <label className="font-medium text-lg" htmlFor="addBox">
           New Item
         </label>
         <input
-          onKeyDown={(e) =>
-            e.key === "Enter" && !e.shiftKey ? onSubmit(e) : null
-          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.shiftKey) {
+              e.preventDefault();
+            }
+          }}
           ref={inputRef}
           name="addBox"
           id="addBox"
@@ -54,7 +56,6 @@ export default function App() {
         />
         <button
           type="submit"
-          onClick={(e) => onSubmit(e)}
           className="font-bold text-lg px-4 py-2 mt-2 mb-2 rounded-2xl bg-amber-500 hover:cursor-pointer border-2 border-amber-500  shadow"
         >
           Add
