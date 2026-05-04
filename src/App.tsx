@@ -80,9 +80,9 @@ export default function App() {
               <li key={todo.id}>
                 <div className="flex items-center gap-2">
                   {/* custom list-disc to make it centered */}
-                  <span className="h-[6px] w-[6px] shrink-0 rounded-full bg-white" />
+                  <span className="h-[6px] w-[6px] shrink-0 rounded-full bg-white shadow" />
                   <input
-                    className="h-4 w-4 cursor-pointer accent-amber-500 bg-red-500  shadow"
+                    className="h-4 w-4 cursor-pointer accent-amber-500"
                     type="checkbox"
                     checked={todo.checked}
                     onChange={(e) =>
