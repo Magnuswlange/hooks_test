@@ -7,6 +7,7 @@ type Todo = {
 };
 
 const LOCAL_STORAGE_KEY = "todo_list";
+const MAX_TODO_TITLE_LENGTH = 80;
 
 export default function App() {
   const [todos, setTodos] = useState<Todo[]>(() => {
@@ -38,6 +39,12 @@ export default function App() {
     if (!inputRef.current) return;
     const trimmed = inputRef.current.value.trim();
     if (!trimmed) return;
+    if (trimmed.length > MAX_TODO_TITLE_LENGTH) {
+      alert(
+        `Please keep the todo to less than or equal to ${MAX_TODO_TITLE_LENGTH} characters.`,
+      );
+      return;
+    }
     setTodos((prev) => [
       ...prev,
       { id: crypto.randomUUID(), title: trimmed, checked: false },
@@ -112,8 +119,10 @@ export default function App() {
                       )
                     }
                   ></input>
-                  {/* add flex-1 to let it grow automatically (fillts entire parent element) */}
-                  <span className="flex-1 text-md">{todo.title}</span>
+                  {/* add flex-1 to let it grow automatically (fillts entire parent element). truncate automatically truncates and adds ellipsis (...). title makes it display the full title on hover. */}
+                  <span className="flex-1 text-md truncate" title={todo.title}>
+                    {todo.title}
+                  </span>
                   <button
                     className="py-1 px-3 rounded-2xl bg-red-500 text-sm font-semibold cursor-pointer shadow"
                     type="button"
