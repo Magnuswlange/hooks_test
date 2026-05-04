@@ -78,7 +78,7 @@ export default function App() {
             )
             .map((todo) => (
               <li key={todo.id}>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   {/* custom list-disc to make it centered */}
                   <span className="h-[6px] w-[6px] shrink-0 rounded-full bg-white" />
                   <input
