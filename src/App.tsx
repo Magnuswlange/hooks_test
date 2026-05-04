@@ -6,11 +6,18 @@ type Todo = {
   checked: boolean;
 };
 
+const LOCAL_STORAGE_KEY = "todo_list";
+
 export default function App() {
   const [todos, setTodos] = useState<Todo[]>(() => {
     console.log("loading from localStorage");
-    const todos = localStorage.getItem("TODO_LIST");
-    return todos ? JSON.parse(todos) : [];
+    try {
+      const todos = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return todos ? JSON.parse(todos) : [];
+    } catch (e) {
+      console.error("Failed to load todos: ", e);
+      return [];
+    }
   });
   const [query, setQuery] = useState<string>("");
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -19,7 +26,11 @@ export default function App() {
 
   useEffect(() => {
     console.log("saving to localStorage");
-    localStorage.setItem("TODO_LIST", JSON.stringify(todos));
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+    } catch (e) {
+      console.error("Failed to save todos: ", e);
+    }
   }, [todos]);
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
