@@ -22,7 +22,8 @@ export default function App() {
     localStorage.setItem("TODO_LIST", JSON.stringify(todos));
   }, [todos]);
 
-  const onClick = () => {
+  const onSubmit = (e: HTMLFormElement) => {
+    e.preventDefault();
     if (!inputRef.current) return;
     const trimmed = inputRef.current.value.trim();
     if (!trimmed) return;
@@ -31,6 +32,7 @@ export default function App() {
       { id: crypto.randomUUID(), title: trimmed, checked: false },
     ]);
     inputRef.current.value = "";
+    inputRef.current.focus();
   };
 
   return (
@@ -41,6 +43,9 @@ export default function App() {
           New Item
         </label>
         <input
+          onKeyDown={(e) =>
+            e.key === "Enter" && !e.shiftKey ? onSubmit(e) : null
+          }
           ref={inputRef}
           name="addBox"
           id="addBox"
@@ -48,8 +53,8 @@ export default function App() {
           type="text"
         />
         <button
-          type="button"
-          onClick={() => onClick()}
+          type="submit"
+          onClick={(e) => onSubmit(e)}
           className="font-bold text-lg px-4 py-2 mt-2 mb-2 rounded-2xl bg-amber-500 hover:cursor-pointer border-2 border-amber-500  shadow"
         >
           Add
@@ -69,7 +74,7 @@ export default function App() {
 
       <h2 className="font-semibold text-2xl">Filtered:</h2>
       {todos.length === 0 ? (
-        "No to-dos"
+        <p>No to-dos</p>
       ) : (
         <ul className="flex flex-col gap-3 pl-2 pb-2">
           {todos
