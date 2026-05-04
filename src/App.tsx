@@ -34,7 +34,7 @@ export default function App() {
   };
 
   return (
-    <div className="w-1/2 mx-auto px-4 py-2 rounded-2xl bg-blue-500 text-white flex flex-col gap-4">
+    <div className="w-1/2 mx-auto px-4 py-2 rounded-2xl bg-blue-500 text-white flex flex-col gap-2 shadow">
       <h1 className="text-center text-4xl font-semibold p-4">To-Do List</h1>
       <form className="flex flex-col gap-2">
         <label className="font-medium text-lg" htmlFor="addBox">
