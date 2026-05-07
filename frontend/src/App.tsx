@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 
+// !TODO: setting is_checked and deleting items optimistically. keep a lastTodoItem copy so reconciliate if request fails.
+
 type Todo = {
-  id: string;
-  title: string;
-  checked: boolean;
+  id: number;
+  content: string;
+  is_checked: boolean;
+  // left out created_at because it's not relevant to the client
 };
 
-const MAX_TODO_TITLE_LENGTH = 80;
+const MAX_TODO_CONTENT_LENGTH = 80;
 
 export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -14,45 +17,106 @@ export default function App() {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const filteredTodos = todos.filter((todo) =>
-    todo.title.toLowerCase().includes(query.toLowerCase()),
+    todo.content.toLowerCase().includes(query.toLowerCase()),
   );
 
   console.log("rerender");
 
   useEffect(() => {
-    console.log("fetching server data");
-    fetch("http://localhost:3000/todos")
-      .then((res) => {
+    const fetchTodos = async () => {
+      console.log("fetching server data");
+      try {
+        const res = await fetch("http://localhost:3000/todos");
+
         if (!res.ok) {
           throw new Error(`Server error: ${res.status} ${res.statusText}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
         setTodos(data);
-      })
-      .catch((e) => {
+      } catch (e) {
         console.error(e);
-      });
+      }
+    };
+
+    fetchTodos();
   }, []);
 
+  const onToggle = async (id: number, isChecked: boolean) => {
+    // optimistically set the client-side todos while sending request and later check against the server (single truth)
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, is_checked: isChecked } : t)),
+    );
+
+    try {
+      const res = await fetch(`http://localhost:3000/todos/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          is_checked: isChecked,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("PATCH request failed");
+      }
+
+      console.log("Toggled TodoItem is_checked with ID: ", id);
+    } catch (e) {
+      console.error("Error: ", e);
+    }
+  };
+
+  const onDelete = async (id: number) => {
+    // optimistically set the client-side todos while sending request and later check against the server (single truth)
+    setTodos((prev) => prev.filter((t) => t.id !== id));
+
+    try {
+      const res = await fetch(`http://localhost:3000/todos/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: id,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("DELETE request failed");
+      }
+
+      console.log("Deleted TodoItem with ID: ", id);
+    } catch (e) {
+      console.error("Error: ", e);
+    }
+  };
+
+  // causes 2 renders. could leave out optimistic todo or use the useOptimistic react hook.
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!inputRef.current) return;
     const trimmed = inputRef.current.value.trim();
+
     if (!trimmed) return;
-    if (trimmed.length > MAX_TODO_TITLE_LENGTH) {
+    if (trimmed.length > MAX_TODO_CONTENT_LENGTH) {
       alert(
-        `Please keep the todo to less than or equal to ${MAX_TODO_TITLE_LENGTH} characters.`,
+        `Please keep the todo to less than or equal to ${MAX_TODO_CONTENT_LENGTH} characters.`,
       );
       return;
     }
 
     // optimistically set the client-side todos while sending request and later check against the server (single truth)
-    // setTodos((prev) => [
-    //   ...prev,
-    //   { id: crypto.randomUUID(), title: trimmed, checked: false },
-    // ]);
+    const optimisticTodo = {
+      id: Math.random(),
+      content: trimmed,
+      is_checked: false,
+    };
+
+    setTodos((prev) => [...prev, optimisticTodo]);
 
     try {
       const res = await fetch("http://localhost:3000/todos", {
@@ -61,8 +125,8 @@ export default function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: trimmed,
-          checked: false,
+          content: trimmed,
+          is_checked: false,
         }),
       });
 
@@ -72,6 +136,11 @@ export default function App() {
 
       const data = await res.json();
       console.log("Created TodoItem: ", data);
+
+      // set the server response as the real todo once retrieved (overrides old setTodos() as state doesn't change until next rerender)
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === optimisticTodo.id ? data : todo)),
+      );
     } catch (e) {
       console.error("Error: ", e);
     }
@@ -131,27 +200,20 @@ export default function App() {
                 <input
                   className="h-4 w-4 cursor-pointer accent-amber-500"
                   type="checkbox"
-                  checked={todo.checked}
-                  onChange={(e) =>
-                    setTodos((prev) =>
-                      prev.map((t) =>
-                        t.id === todo.id
-                          ? { ...t, checked: e.target.checked }
-                          : t,
-                      ),
-                    )
-                  }
+                  checked={todo.is_checked}
+                  onChange={(e) => onToggle(todo.id, e.target.checked)}
                 ></input>
-                {/* add flex-1 to let it grow automatically (fills entire parent element). truncate automatically truncates and adds ellipsis (...). title makes it display the full title on hover. */}
-                <span className="flex-1 text-md truncate" title={todo.title}>
-                  {todo.title}
+                {/* add flex-1 to let it grow automatically (fills entire parent element). truncate automatically truncates and adds ellipsis (...). content makes it display the full content on hover. */}
+                <span
+                  className="flex-1 text-md truncate"
+                  content={todo.content}
+                >
+                  {todo.content}
                 </span>
                 <button
                   className="py-1 px-3 rounded-2xl bg-red-500 text-sm font-semibold cursor-pointer shadow"
                   type="button"
-                  onClick={() =>
-                    setTodos((prev) => prev.filter((t) => t.id !== todo.id))
-                  }
+                  onClick={() => onDelete(todo.id)}
                 >
                   Delete
                 </button>
