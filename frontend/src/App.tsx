@@ -7,8 +7,6 @@ import {
   useState,
 } from "react";
 
-// !TODO: setting is_checked and deleting items optimistically. keep a lastTodoItem copy so reconciliate if request fails.
-
 type Todo = {
   id: number;
   content: string;
@@ -52,7 +50,7 @@ export default function App() {
     const fetchTodos = async () => {
       console.log("fetching server data");
       try {
-        const res = await fetch("http://localhost:3000/todos");
+        const res = await fetch("http://localhost:3000/api/todos");
 
         if (!res.ok) {
           throw new Error(`Server error: ${res.status} ${res.statusText}`);
@@ -82,7 +80,7 @@ export default function App() {
       applyOptimisticTodos({ type: "toggle", id: id, is_checked: isChecked });
 
       try {
-        const res = await fetch(`http://localhost:3000/todos/${id}`, {
+        const res = await fetch(`http://localhost:3000/api/todos/${id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -110,7 +108,7 @@ export default function App() {
       applyOptimisticTodos({ type: "delete", id: id });
 
       try {
-        const res = await fetch(`http://localhost:3000/todos/${id}`, {
+        const res = await fetch(`http://localhost:3000/api/todos/${id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -157,7 +155,7 @@ export default function App() {
       applyOptimisticTodos({ type: "add", todo: optimisticTodo });
 
       try {
-        const res = await fetch("http://localhost:3000/todos", {
+        const res = await fetch("http://localhost:3000/api/todos", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -232,7 +230,7 @@ export default function App() {
             <li key={todo.id}>
               <div className="flex items-center gap-2">
                 {/* custom list-disc to make it centered */}
-                <span className="h-[6px] w-[6px] shrink-0 rounded-full bg-white shadow" />
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white shadow" />
                 <input
                   className="h-4 w-4 cursor-pointer accent-amber-500"
                   type="checkbox"
