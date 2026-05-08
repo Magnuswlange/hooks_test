@@ -46,10 +46,10 @@ Example:
 
 | Method | Path | Purpose               | Request body              | Success                           | Errors        |
 | ------ | ---- | --------------------- | ------------------------- | --------------------------------- | ------------- |
-| GET    | /    | Fetch all todo items  | None                      | 200 OK + array of todo objects    | 404, 500      |
+| GET    | /    | Fetch all todo items  | None                      | 200 OK + array of todo objects    | 500           |
 | GET    | /:id | Fetch todo item       | None                      | 200 OK + todo object              | 404, 500      |
 | POST   | /    | Create a todo         | { "content": "msg" }      | 201 Created + created todo object | 400, 500      |
-| PATCH  | /:id | Update checked status | { "is_checked": boolean } | 200 OK + updated todo object      | 400, 404, 500 |
+| PATCH  | /:id | Update checked status | { "is_checked": boolean } | 204 No Content                    | 400, 404, 500 |
 | DELETE | /:id | Delete a todo         | None                      | 204 No Content                    | 404, 500      |
 
 ### API examples
