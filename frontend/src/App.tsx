@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useOptimistic, useRef, useState } from "react";
 
 // !TODO: setting is_checked and deleting items optimistically. keep a lastTodoItem copy so reconciliate if request fails.
 
@@ -6,7 +6,7 @@ type Todo = {
   id: number;
   content: string;
   is_checked: boolean;
-  // left out created_at because it's not relevant to the client
+  // created_at: Date;
 };
 
 const MAX_TODO_CONTENT_LENGTH = 80;
@@ -42,7 +42,7 @@ export default function App() {
     fetchTodos();
   }, []);
 
-  const onToggle = async (id: number, isChecked: boolean) => {
+  const handleToggle = async (id: number, isChecked: boolean) => {
     // optimistically set the client-side todos while sending request and later check against the server (single truth)
     setTodos((prev) =>
       prev.map((t) => (t.id === id ? { ...t, is_checked: isChecked } : t)),
@@ -69,7 +69,7 @@ export default function App() {
     }
   };
 
-  const onDelete = async (id: number) => {
+  const handleDelete = async (id: number) => {
     // optimistically set the client-side todos while sending request and later check against the server (single truth)
     setTodos((prev) => prev.filter((t) => t.id !== id));
 
@@ -110,6 +110,13 @@ export default function App() {
     }
 
     // optimistically set the client-side todos while sending request and later check against the server (single truth)
+    // const optimisticTodo: Omit<Todo, "is_checked", "created_at"> = {
+    // id: Math.random(),
+    // content: trimmed,
+    // };
+
+    // https://www.youtube.com/watch?v=M3mGY0pgFk0&t=125s
+
     const optimisticTodo = {
       id: Math.random(),
       content: trimmed,
@@ -126,7 +133,6 @@ export default function App() {
         },
         body: JSON.stringify({
           content: trimmed,
-          is_checked: false,
         }),
       });
 
@@ -201,7 +207,7 @@ export default function App() {
                   className="h-4 w-4 cursor-pointer accent-amber-500"
                   type="checkbox"
                   checked={todo.is_checked}
-                  onChange={(e) => onToggle(todo.id, e.target.checked)}
+                  onChange={(e) => handleToggle(todo.id, e.target.checked)}
                 ></input>
                 {/* add flex-1 to let it grow automatically (fills entire parent element). truncate automatically truncates and adds ellipsis (...). content makes it display the full content on hover. */}
                 <span
@@ -213,7 +219,7 @@ export default function App() {
                 <button
                   className="py-1 px-3 rounded-2xl bg-red-500 text-sm font-semibold cursor-pointer shadow"
                   type="button"
-                  onClick={() => onDelete(todo.id)}
+                  onClick={() => handleDelete(todo.id)}
                 >
                   Delete
                 </button>
