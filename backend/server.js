@@ -23,16 +23,7 @@ app.use(
 );
 app.use(logger);
 app.use(express.json());
-app.use("/todos", todosRouter); // enable JSON body parsing whenever JSON in -> parse and put in req.body
-
-// end points
-app.get("/", (req, res) => {
-  res.send("my first response");
-});
-
-app.get("/about", (req, res) => {
-  res.send("about");
-});
+app.use("/api/todos", todosRouter); // enable JSON body parsing whenever JSON in -> parse and put in req.body
 
 app.listen(PORT, () => {
   console.log("Listening on port: ", PORT);
