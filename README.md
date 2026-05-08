@@ -44,13 +44,13 @@ Example:
 
 ### REST API
 
-| Method | Path | Purpose               | Request body              | Success                           | Errors        |
-| ------ | ---- | --------------------- | ------------------------- | --------------------------------- | ------------- |
-| GET    | /    | Fetch all todo items  | None                      | 200 OK + array of todo objects    | 500           |
-| GET    | /:id | Fetch todo item       | None                      | 200 OK + todo object              | 404, 500      |
-| POST   | /    | Create a todo         | { "content": "msg" }      | 201 Created + created todo object | 400, 500      |
-| PATCH  | /:id | Update checked status | { "is_checked": boolean } | 204 No Content                    | 400, 404, 500 |
-| DELETE | /:id | Delete a todo         | None                      | 204 No Content                    | 404, 500      |
+| Method | Path | Purpose               | Success                           | Errors        |
+| ------ | ---- | --------------------- | --------------------------------- | ------------- |
+| GET    | /    | Fetch all todo items  | 200 OK + array of todo objects    | 500           |
+| GET    | /:id | Fetch todo item       | 200 OK + todo object              | 404, 500      |
+| POST   | /    | Create a todo         | 201 Created + created todo object | 400, 500      |
+| PATCH  | /:id | Update checked status | 204 No Content                    | 400, 404, 500 |
+| DELETE | /:id | Delete a todo         | 204 No Content                    | 404, 500      |
 
 ### API examples
 
@@ -58,30 +58,29 @@ Example:
 
 Updates the checked state of a todo item.
 
+Path parameters:
+
+| Field | Type   | Required |
+| ----- | ------ | -------- |
+| id    | number | Yes      |
+
 Request body:
 
-```ts
-{
-  "is_checked": boolean,
-}
-```
+| Field      | Type    | Required |
+| ---------- | ------- | -------- |
+| is_checked | boolean | Yes      |
 
 Success response:
 
-```ts
-{
-  "id": number,
-  "content": string,
-  "is_checked": boolean,
-  "created_at": date,
-}
+```txt
+Status: 204 No Content
 ```
 
 Errors:
 
-- 400 if "is_checked" is not a boolean
-- 404 if no todo with that ID exists
-- 500 for server/database errors.
+- 400 Bad Request - invalid "id" or "is_checked"
+- 404 Not Found - todo item not found
+- 500 Internal Server Error - database error
 
 ## Folder structure
 
