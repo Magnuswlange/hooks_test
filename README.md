@@ -1,20 +1,171 @@
 # Hooks Test
 
-## Introduction
+## Overview
 
-This repo was initially set up for me to learn to use the most common React hooks. It eventually turned out to be a frontend, backend and Postgres database todo list app. However, I still practiced using the useRef and useOptimistic hooks. Additionally, I send HTTP requests to the backend via raw JS without the use of e.g. Axios. Later on, I plan to re-do the project using a simpler architecture, namely: React frontend and Supabase as BaaS.
+This repo was initially set up for me to learn the most common React hooks. It eventually turned out to be a frontend, backend and Postgres database todo list app. I learned to use the useRef and useOptimistic hooks. Additionally, I started to better understand the async, await pattern when I had to send POST HTTP requests to the backend.
 
-## Architecture
+## Stack
 
-Frontend -> backend -> Postgres DB
+- React
+- Express
+- PostgreSQL
 
 ## Endpoints
 
-The REST API exposes the following endpoints:
+### TodoItem shape
 
-| Method | Path                |                       | Purpose                   | Success                    | Errors        |
-| ------ | ------------------- | --------------------- | ------------------------- | -------------------------- | ------------- |
-| GET    | /todos or todos/:id | Fetch todo item(s)    | None                      | 200 OK + todo JSON         | 404, 500      |
-| POST   | /todos              | Create a todo         | {"content":"msg"}         | 201 Created + created todo | 400, 500      |
-| PATCH  | /todos/:id          | Update checked status | { "is_checked": boolean } | 200 OK + updated todo      | 400, 404, 500 |
-| DELETE | /todos/:id          | Delete a todo         | None                      | 204 No Content             | 404, 500      |
+The backend API responses use the snake_case naming convention. The frontend keeps the same variable names for consistency.
+
+```ts
+type TodoItem = {
+  id: number;
+  content: string;
+  is_checked: boolean;
+  created_at: string; // ISO 8601 timestamp
+};
+```
+
+Example:
+
+```json
+{
+  "id": 1,
+  "content": "Buy milk",
+  "is_checked": false,
+  "created_at": "2026-05-08T14:32:00.000Z"
+}
+```
+
+### Base URL
+
+```txt
+/api/todos
+```
+
+### REST API
+
+| Method | Path | Purpose               | Request body              | Success                           | Errors        |
+| ------ | ---- | --------------------- | ------------------------- | --------------------------------- | ------------- |
+| GET    | /    | Fetch all todo items  | None                      | 200 OK + array of todo objects    | 404, 500      |
+| GET    | /:id | Fetch todo item       | None                      | 200 OK + todo object              | 404, 500      |
+| POST   | /    | Create a todo         | { "content": "msg" }      | 201 Created + created todo object | 400, 500      |
+| PATCH  | /:id | Update checked status | { "is_checked": boolean } | 200 OK + updated todo object      | 400, 404, 500 |
+| DELETE | /:id | Delete a todo         | None                      | 204 No Content                    | 404, 500      |
+
+### API examples
+
+#### PATCH /todos/:id
+
+Updates the checked state of a todo item.
+
+Request body:
+
+```ts
+{
+  "is_checked": boolean,
+}
+```
+
+Success response:
+
+```ts
+{
+  "id": number,
+  "content": string,
+  "is_checked": boolean,
+  "created_at": date,
+}
+```
+
+Errors:
+
+- 400 if "is_checked" is not a boolean
+- 404 if no todo with that ID exists
+- 500 for server/database errors.
+
+## Folder structure
+
+```txt
+hook_test/
+├── backend/
+│   ├── routes/
+│   ├── db.js
+│   ├── server.js
+│   ├── package.json
+│   └── .env
+├── frontend/
+│   ├── src/
+│   ├── index.html
+│   └── package.json
+└── README.md
+```
+
+## Setup
+
+### Prerequisites
+
+- Git
+- Node.js
+- npm
+- PostgreSQL
+
+### Install
+
+Clone repo
+
+```bash
+git clone https://github.com/Magnuswlange/hooks_test.git
+cd hooks_test/
+```
+
+Install backend dependencies
+
+```bash
+cd ./backend/
+npm i
+```
+
+Install frontend dependencies
+
+```bash
+cd ../frontend/
+npm i
+```
+
+## Environment variables
+
+Create a ".env" file in backend/ using the following example:
+
+```env
+PORT=3000
+PG_PORT=5432
+PG_HOST=your_postgres_hostname
+PG_USER=your_postgres_username
+PG_PASS=your_postgres_password
+PG_DB=your_database_name
+TABLE_NAME=your_table_name
+```
+
+## Run
+
+Start the backend:
+
+```bash
+cd ../backend/
+npm run devStart
+```
+
+Start the frontend:
+
+```bash
+cd ../frontend/
+npm run dev
+```
+
+Frontend runs on http://localhost:5173 and backend on http://localhost:3000 by default.
+
+## Future improvements
+
+- Use the Axios framework for sending POST requests.
+
+- Re-do the project using a simpler architecture, namely: React frontend and Supabase as BaaS.
