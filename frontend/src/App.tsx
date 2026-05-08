@@ -1,4 +1,11 @@
-import { useEffect, useOptimistic, useRef, useState } from "react";
+import {
+  startTransition,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useRef,
+  useState,
+} from "react";
 
 // !TODO: setting is_checked and deleting items optimistically. keep a lastTodoItem copy so reconciliate if request fails.
 
@@ -6,19 +13,38 @@ type Todo = {
   id: number;
   content: string;
   is_checked: boolean;
-  // created_at: Date;
 };
+
+type OptimisticAction =
+  | { type: "add"; todo: Todo }
+  | { type: "toggle"; id: number; is_checked: boolean }
+  | { type: "delete"; id: number };
 
 const MAX_TODO_CONTENT_LENGTH = 80;
 
 export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [query, setQuery] = useState<string>("");
+  const [optimisticTodos, applyOptimisticTodos] = useOptimistic<
+    Todo[],
+    OptimisticAction
+  >(todos, (currentTodos: Todo[], action: OptimisticAction) => {
+    switch (action.type) {
+      case "add":
+        return [...currentTodos, action.todo];
+      case "toggle":
+        return currentTodos.map((todo) =>
+          todo.id === action.id
+            ? { ...todo, is_checked: action.is_checked }
+            : todo,
+        );
+      case "delete":
+        return currentTodos.filter((todo) => todo.id !== action.id);
+      default:
+        return currentTodos;
+    }
+  });
   const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const filteredTodos = todos.filter((todo) =>
-    todo.content.toLowerCase().includes(query.toLowerCase()),
-  );
 
   console.log("rerender");
 
@@ -42,56 +68,68 @@ export default function App() {
     fetchTodos();
   }, []);
 
+  // only update when todos or query change
+  const filteredTodos = useMemo(
+    () =>
+      optimisticTodos.filter((todo) =>
+        todo.content.toLowerCase().includes(query.toLowerCase()),
+      ),
+    [optimisticTodos, query],
+  );
+
   const handleToggle = async (id: number, isChecked: boolean) => {
-    // optimistically set the client-side todos while sending request and later check against the server (single truth)
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, is_checked: isChecked } : t)),
-    );
+    startTransition(async () => {
+      applyOptimisticTodos({ type: "toggle", id: id, is_checked: isChecked });
 
-    try {
-      const res = await fetch(`http://localhost:3000/todos/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          is_checked: isChecked,
-        }),
-      });
+      try {
+        const res = await fetch(`http://localhost:3000/todos/${id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            is_checked: isChecked,
+          }),
+        });
 
-      if (!res.ok) {
-        console.error("PATCH request failed");
+        if (!res.ok) {
+          console.error("PATCH request failed");
+        }
+
+        setTodos((prev) =>
+          prev.map((t) => (t.id === id ? { ...t, is_checked: isChecked } : t)),
+        );
+      } catch (e) {
+        console.error("Error: ", e);
       }
-
-      console.log("Toggled TodoItem is_checked with ID: ", id);
-    } catch (e) {
-      console.error("Error: ", e);
-    }
+    });
   };
 
   const handleDelete = async (id: number) => {
-    // optimistically set the client-side todos while sending request and later check against the server (single truth)
-    setTodos((prev) => prev.filter((t) => t.id !== id));
+    startTransition(async () => {
+      applyOptimisticTodos({ type: "delete", id: id });
 
-    try {
-      const res = await fetch(`http://localhost:3000/todos/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: id,
-        }),
-      });
+      try {
+        const res = await fetch(`http://localhost:3000/todos/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: id,
+          }),
+        });
 
-      if (!res.ok) {
-        console.error("DELETE request failed");
+        if (!res.ok) {
+          console.error("DELETE request failed");
+        }
+
+        setTodos((prev) => prev.filter((t) => t.id !== id));
+        console.log("Deleted TodoItem with ID: ", id);
+      } catch (e) {
+        console.error("Error: ", e);
       }
-
-      console.log("Deleted TodoItem with ID: ", id);
-    } catch (e) {
-      console.error("Error: ", e);
-    }
+    });
   };
 
   // causes 2 renders. could leave out optimistic todo or use the useOptimistic react hook.
@@ -109,47 +147,39 @@ export default function App() {
       return;
     }
 
-    // optimistically set the client-side todos while sending request and later check against the server (single truth)
-    // const optimisticTodo: Omit<Todo, "is_checked", "created_at"> = {
-    // id: Math.random(),
-    // content: trimmed,
-    // };
-
-    // https://www.youtube.com/watch?v=M3mGY0pgFk0&t=125s
-
-    const optimisticTodo = {
+    const optimisticTodo: Todo = {
       id: Math.random(),
-      content: trimmed,
+      content: trimmed + " optimistic",
       is_checked: false,
     };
 
-    setTodos((prev) => [...prev, optimisticTodo]);
+    startTransition(async () => {
+      applyOptimisticTodos({ type: "add", todo: optimisticTodo });
 
-    try {
-      const res = await fetch("http://localhost:3000/todos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: trimmed,
-        }),
-      });
+      try {
+        const res = await fetch("http://localhost:3000/todos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            content: trimmed,
+          }),
+        });
 
-      if (!res.ok) {
-        console.error("POST request failed");
+        if (!res.ok) {
+          console.error("POST request failed");
+        }
+
+        const data = await res.json();
+        console.log("Created TodoItem: ", data);
+
+        // set the server response as the real todo once retrieved (overrides old setTodos() as state doesn't change until next rerender)
+        setTodos((prev) => [...prev, data]);
+      } catch (e) {
+        console.error("Error: ", e);
       }
-
-      const data = await res.json();
-      console.log("Created TodoItem: ", data);
-
-      // set the server response as the real todo once retrieved (overrides old setTodos() as state doesn't change until next rerender)
-      setTodos((prev) =>
-        prev.map((todo) => (todo.id === optimisticTodo.id ? data : todo)),
-      );
-    } catch (e) {
-      console.error("Error: ", e);
-    }
+    });
 
     inputRef.current.value = "";
     inputRef.current.focus();
