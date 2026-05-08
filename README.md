@@ -142,7 +142,6 @@ PG_HOST=your_postgres_hostname
 PG_USER=your_postgres_username
 PG_PASS=your_postgres_password
 PG_DB=your_database_name
-TABLE_NAME=your_table_name
 ```
 
 ## Run
