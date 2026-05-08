@@ -3,10 +3,11 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const todosRouter = require("./routes/todos");
+const PORT = process.env.PORT;
 
 const logger = (req, body, next) => {
   console.log(req.method, req.path);
-  next(); // dont hang, run next
+  next(); // don't hang, run next
 };
 
 // middleware: function that runs between the request and route handler: req -> middleware -> res.
@@ -22,7 +23,7 @@ app.use(
 );
 app.use(logger);
 app.use(express.json());
-app.use("/todos", todosRouter); // enable JSON body parsing whenver JSON in -> parse and put in req.body
+app.use("/todos", todosRouter); // enable JSON body parsing whenever JSON in -> parse and put in req.body
 
 // end points
 app.get("/", (req, res) => {
@@ -33,6 +34,6 @@ app.get("/about", (req, res) => {
   res.send("about");
 });
 
-app.listen(process.env.PORT, () => {
-  console.log("Listening on port: ", process.env.PORT);
+app.listen(PORT, () => {
+  console.log("Listening on port: ", PORT);
 });
