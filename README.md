@@ -160,7 +160,7 @@ cd ../frontend/
 npm run dev
 ```
 
-Frontend runs on http://localhost:5173 and backend on http://localhost:3000 by default.
+Frontend runs on <http://localhost:5173> and backend on <http://localhost:3000> by default.
 
 ## Future improvements
 
