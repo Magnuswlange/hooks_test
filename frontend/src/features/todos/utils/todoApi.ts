@@ -1,4 +1,6 @@
-const BASE_URL = "http://localhost:3000/api/todos";
+const BASE_URL = import.meta.env.DEV
+  ? "http://localhost:3000/api/todos"
+  : "/api/todos";
 import type { Todo } from "../types/todos.types";
 
 export const fetchTodos = async (): Promise<Todo[]> => {
