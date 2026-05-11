@@ -39,9 +39,9 @@ jobs:
       - name: Copy backend source files to server (compose builds backend)
         run: |
           rsync -av --delete \
-            --exlucde "node_modules" \
-            --excluse ".git" \
-            --excluse ".env" \
+            --exclude "node_modules" \
+            --exclude ".git" \
+            --exclude ".env" \
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             ./backend/ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/backend/
