@@ -167,3 +167,25 @@ Frontend runs on <http://localhost:5173> and backend on <http://localhost:3000> 
 - Use the Axios framework for sending POST requests.
 
 - Re-do the project using a simpler architecture, namely: React frontend and Supabase as BaaS.
+
+## Notes
+
+Workflows:
+
+- The deploy workflow install frontend deps, builds it and transfers it to the server.
+- Backend source files are copied to the server, where docker compose builds the backend container using the Dockerfile.
+
+Backend Dockerfile:
+
+- Creates a new Node Alpine container
+- Sets the working directory to /app
+- Copies package.json and package-lock.json into /app
+- Copies everything from /backend into /app
+- For documentation only, it "exposes" port 3000, letting people know it listens on port 3000
+- Runs npm start to run the backend
+
+Notes:
+
+- Backend listens on :3000
+- Compose file routes host (incoming) 3001:3000 (container, internal).
+- Nginx RPM maps /api/ to 127.0.0.1:3001, so it goes into the 3001 port of the host, mapping to port 3000 inside the backend container.

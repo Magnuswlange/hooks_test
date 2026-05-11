@@ -39,7 +39,7 @@ jobs:
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             ./frontend/dist/ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/frontend/
-     
+
       - name: Copy backend source files to server (compose builds backend)
         run: |
           rsync -rltv --delete \
@@ -57,15 +57,3 @@ jobs:
           cd ~/docker_compose/nginx_ws_proj
           docker compose up -d --build
           "
-
-# if deploying on the runner (im using my debian vm for docker containers):
-      #- name: Deploy build files
-      #  run: |
-       #   mkdir -p ~/node-app
-      #    cp -r ./dist/* ~/node-app
-          
-    #  - name: Restart Docker container
-   #     run: |
-     #     cd ~/docker_compose/nginx_ws
-    #      docker compose down
-     #     docker compose up -d
