@@ -24,14 +24,6 @@ jobs:
         run: npm run build
         working-directory: ./frontend
 
-      - name: Install backend deps (for validation)
-        run: npm ci
-        working-directory: ./backend
-      
-      - name: Build backend (for validation)
-        run: npm run build
-        working-directory: ./backend
-        
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
@@ -41,15 +33,19 @@ jobs:
       - name: Copy frontend build files to server
         # use rsync to delete old files first. also copies just changes, so deployment is faster compared to using scp.
         run: |
-          rsync -av --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
-            ./frontend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/site/
+          rsync -rltv --delete \
+            --no-owner --no-group --no-perms \
+            -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+            ./frontend/dist/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/frontend/
      
       - name: Copy backend source files to server (compose builds backend)
         run: |
-          rsync -av --delete \
-            --exlucde "node_modules" \
-            --excluse ".git" \
-            --excluse ".env" \
+          rsync -rltv --delete \
+            --no-owner --no-group --no-perms \
+            --exclude "node_modules" \
+            --exclude ".git" \
+            --exclude ".env" \
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             ./backend/ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/backend/
