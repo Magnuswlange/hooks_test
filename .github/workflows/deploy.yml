@@ -38,7 +38,7 @@ jobs:
             --no-owner --no-group --no-perms \
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             ./frontend/dist/ \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/frontend/
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/hooks_test/frontend/
 
       - name: Copy backend source files to server (compose builds backend)
         run: |
@@ -49,11 +49,11 @@ jobs:
             --exclude ".env" \
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             ./backend/ \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/backend/
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/hooks_test/backend/
 
       - name: Rebuild and restart containers (stack)
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-          cd ~/docker_compose/nginx_ws_proj
+          cd ~/docker_compose/hoks_test/
           docker compose up -d --build
           "
