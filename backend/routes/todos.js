@@ -4,10 +4,6 @@ const pool = require("../db");
 
 // !TODO: to get server-sent updates use server-side events (SSE) or websockets and listen for changes.
 
-router.get("/test", (req, res) => {
-  res.json({ ok: true, router: true });
-});
-
 // middleware running every time an id parameter is passed to verify it's valid and sets todoId in the request.
 router.param("id", async (req, res, next, value) => {
   const id = Number(value);

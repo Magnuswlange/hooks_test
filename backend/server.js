@@ -25,9 +25,6 @@ app.use(
 );
 app.use(logger);
 app.use(express.json());
-app.get("/api/test", (req, res) => {
-  res.json({ ok: true });
-});
 app.use("/api/todos", todosRouter); // enable JSON body parsing whenever JSON in -> parse and put in req.body
 
 app.listen(PORT, () => {
