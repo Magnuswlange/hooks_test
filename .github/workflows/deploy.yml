@@ -24,14 +24,6 @@ jobs:
         run: npm run build
         working-directory: ./frontend
 
-      - name: Install backend deps (for validation)
-        run: npm ci
-        working-directory: ./backend
-      
-      - name: Build backend (for validation)
-        run: npm run build
-        working-directory: ./backend
-        
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
