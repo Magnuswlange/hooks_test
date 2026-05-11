@@ -54,6 +54,6 @@ jobs:
       - name: Rebuild and restart containers (stack)
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-          cd ~/docker_compose/hoks_test/
+          cd ~/docker_compose/hooks_test/
           docker compose up -d --build
           "
