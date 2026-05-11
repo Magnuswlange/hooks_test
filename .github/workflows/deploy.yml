@@ -34,7 +34,7 @@ jobs:
         # use rsync to delete old files first. also copies just changes, so deployment is faster compared to using scp.
         run: |
           rsync -av --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
-            ./frontend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/site/
+            ./frontend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/frontend/
      
       - name: Copy backend source files to server (compose builds backend)
         run: |
