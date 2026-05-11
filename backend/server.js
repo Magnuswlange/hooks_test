@@ -5,7 +5,7 @@ const cors = require("cors");
 const todosRouter = require("./routes/todos");
 const PORT = process.env.PORT;
 
-const logger = (req, body, next) => {
+const logger = (req, res, next) => {
   console.log(req.method, req.path);
   next(); // don't hang, run next
 };
@@ -25,6 +25,9 @@ app.use(
 );
 app.use(logger);
 app.use(express.json());
+app.get("/api/test", (req, res) => {
+  res.json({ ok: true });
+});
 app.use("/api/todos", todosRouter); // enable JSON body parsing whenever JSON in -> parse and put in req.body
 
 app.listen(PORT, () => {
