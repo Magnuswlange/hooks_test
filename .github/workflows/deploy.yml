@@ -16,27 +16,49 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
-      - run: npm run build
+      - name: Install frontend deps
+        run: npm ci
+        working-directory: ./frontend
 
+      - name: Build frontend
+        run: npm run build
+        working-directory: ./frontend
+
+      - name: Install backend deps (for validation)
+        run: npm ci
+        working-directory: ./backend
+      
+      - name: Build backend (for validation)
+        run: npm run build
+        working-directory: ./backend
+        
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: Copy build files (/dist) to nginx ws host
+      - name: Copy frontend build files to server
         # use rsync to delete old files first. also copies just changes, so deployment is faster compared to using scp.
         run: |
           rsync -av --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
-            ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/site/
+            ./frontend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/site/
+     
+      - name: Copy backend source files to server (compose builds backend)
+        run: |
+          rsync -av --delete \
+            --exlucde "node_modules" \
+            --excluse ".git" \
+            --excluse ".env" \
+            -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+            ./backend/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/docker/nginx_ws_proj/backend/
 
-      - name: Restart Docker container on nginx ws host
+      - name: Rebuild and restart containers (stack)
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-          cd ~/docker_compose/nginx_ws
-          docker compose down
-          docker compose up -d
+          cd ~/docker_compose/nginx_ws_proj
+          docker compose up -d --build
           "
 
 # if deploying on the runner (im using my debian vm for docker containers):
