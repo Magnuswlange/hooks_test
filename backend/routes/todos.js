@@ -6,7 +6,6 @@ const pool = require("../db");
 
 // middleware running every time an id parameter is passed to verify it's valid and sets todoId in the request.
 router.param("id", async (req, res, next, value) => {
-  console.log("middleware checking id parameter...");
   const id = Number(value);
 
   if (!Number.isInteger(id) || id <= 0) {
