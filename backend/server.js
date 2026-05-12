@@ -18,11 +18,12 @@ app.use(
       "http://localhost:5173",
       "http://127.0.0.1:4000",
       "http://127.0.0.1:5173",
-      "http://test.magnushome.xyz",
-      "https://test.magnushome.xyz",
+      "http://todo.magnushome.xyz",
+      "https://todo.magnushome.xyz",
     ],
   }),
 );
+
 app.use(logger);
 app.use(express.json());
 app.use("/api/todos", todosRouter); // enable JSON body parsing whenever JSON in -> parse and put in req.body
